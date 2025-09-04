@@ -1,15 +1,10 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 import warnings
+from Storage.database import pull_json
 from Ui_design import Ui_MainWindow, InputDialog
-import json
-import os
 
-DATA_FILE = "storage.json"
-
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, 'w') as data:
-        json.dump({}, data)
+storage = pull_json()
 
 
 class Logic(QtWidgets.QMainWindow):
@@ -69,18 +64,13 @@ class Logic(QtWidgets.QMainWindow):
 
         # Save to JSON if this is a new creation
         if name is None:
-            with open(DATA_FILE, 'r+') as db_file:
-                storage = json.load(db_file)
-                storage.update({
-                    self.value: [
-                        self.ui.entryC2.text(),
-                        self.ui.labelB2.text(),
-                        self.ui.labelA2.text()
-                    ]
-                })
-                db_file.seek(0)
-                json.dump(storage, db_file, indent=4)
-                db_file.truncate()
+            storage.update({
+                self.value: [
+                    self.ui.entryC2.text(),
+                    self.ui.labelB2.text(),
+                    self.ui.labelA2.text()
+                ]
+            })
         new_btn.clicked.connect(lambda _, b=new_btn: self.set_current_button(b))
         print('create')
 
@@ -112,7 +102,6 @@ class Logic(QtWidgets.QMainWindow):
         else:
             self.ui.button_show.setText('OFF')
 
-
     def handle_save(self):
         # Get reference to the last button you interacted with
         if not hasattr(self, "current_button"):
@@ -121,14 +110,9 @@ class Logic(QtWidgets.QMainWindow):
         if port is None:
             self.ui.statusbar.showMessage("ALERT: Please enter Port Number", 5000)
             return 0
-        with open(DATA_FILE, 'r+') as db_file:
-            storage = json.load(db_file)
-            updated_list = storage.get(self.value)
-            updated_list[0] = port
-            storage[self.value] = updated_list
-            db_file.seek(0)
-            json.dump(storage, db_file, indent=4)
-            db_file.truncate()
+        updated_list = storage.get(self.value)
+        updated_list[0] = port
+        storage[self.value] = updated_list
         print('save')
 
     def activate(self):
@@ -162,18 +146,9 @@ class Logic(QtWidgets.QMainWindow):
         button.deleteLater()
 
         # Remove from JSON
-        with open(DATA_FILE, "r+") as db_file:
-            try:
-                storage = json.load(db_file)
-            except json.JSONDecodeError:
-                storage = {}
 
-            if label in storage:
-                del storage[label]
-
-            db_file.seek(0)
-            json.dump(storage, db_file, indent=4)
-            db_file.truncate()
+        if label in storage:
+            del storage[label]
 
         # Reset current button
         self.current_button = None
@@ -182,22 +157,16 @@ class Logic(QtWidgets.QMainWindow):
     def handle_newButton(self):
         _translate = QtCore.QCoreApplication.translate
         if self.current_button.isChecked():
-            with open(DATA_FILE, 'r+') as storage:
-                storage = json.load(storage)
-                self.ui.entryC2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[0]}"))
-                self.ui.labelB2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[1]}"))
-                self.ui.labelA2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[2]}"))
+            self.ui.entryC2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[0]}"))
+            self.ui.labelB2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[1]}"))
+            self.ui.labelA2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[2]}"))
 
     def load_buttons(self):
         """Load buttons from JSON"""
-        if os.path.exists(DATA_FILE):
-            with open(DATA_FILE, "r") as f:
-                try:
-                    labels = json.load(f)
-                except json.JSONDecodeError:
-                    return
-            for label in labels.keys():
-                self.handle_create(label)
+        if storage.keys() is None:
+            return
+        for label in storage.keys():
+            self.handle_create(label)
 
     def display(self):
         self.max_lines = 15  # keep only last 50 messages
