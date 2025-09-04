@@ -1,0 +1,79 @@
+                                       ***Keylogger***
+
+## PLANNING(before coding) ##
+
+*What does this app do?(short description)
+	#Creates a trojan that when executed you can observe and record key strokes pressed by victim.
+
+*What are the core features?
+	#Retry Mechanism: Automatically reconnects when Victim comes back online
+	#Storage: Stores data in text format
+	
+
+*What tools/libraries/frameworks will i use?
+	#subprocess
+	#win32api
+	#tkinter
+	#pynput
+	#shutil
+	#socket
+	#time
+	#OS
+
+*Rough plan:logic flow(in text or diagrams)
+
+      **view on the Graphical UI **
+
+## Main window
+	------------------------------------------------------------------------
+	|______________________________________________________________________|
+	|                        _H.O.M.E_ | V.I.E.W                           |
+	|   TROJAN_NAME            			S E T T I N G S                    |
+	|+  { CREATE }  | Victim_Name : Unidentified               			   |	
+	|      		    | Victim_IP	  :	Unidentified						   |
+	|          	    | 													   |
+	|   		    | Port : _ _ _ _ _									   |
+	|      		    | Record : YES/NO									   |
+	|      		    |                                                      |
+	|    		    | 													   |
+	|      		    | 													   |
+	|  			    | 													   |
+	|      		    | 													   |
+	|       	    | 	{ SAVE }   { ACTIVATE/DEACTIVATE }	 { DAELETE }   |
+	|       	    | 				  Target : OFFLINE				       |
+	------------------------------------------------------------------------
+	
+## View Window
+	------------------------------------------------------------------------
+	|______________________________________________________________________|
+	|                          H.O.M.E  | _V.I.E.W_                        |
+	|  							  Undefined				                   |
+	|______________________________________________________________________|	
+	|      		     													   |
+	|          	     													   |
+	|   		     													   |
+	|      		     													   |
+	|      		                                                           |
+	|    		     													   |
+	|      		     													   |
+	|  			     													   |
+	|      		     													   |
+	| Recording : NO      	     							  DEACTIVATED  |
+	|       	     		    Target : OFFLINE						   |
+	------------------------------------------------------------------------
+
+
+## README.md(after coding) ##
+
+*Project title
+	#Keylogger
+
+*Short description
+	# This is Graphical UI(GUI) application 
+
+*How to run the project(local setup steps)
+
+*How to use it(example inputs or features; Screenshots(optional))
+
+*Future plans
+
