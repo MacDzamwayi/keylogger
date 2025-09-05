@@ -1,16 +1,19 @@
-# This is a sample Python script.
+import warnings
+import sys
+from PyQt6 import QtWidgets
+from Storage.database import pull_json
+from User_interface.Ui_logic import Logic
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def main():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    app = QtWidgets.QApplication(sys.argv)
+    storage = pull_json()
+    MainWindow = Logic(storage)
+    MainWindow.show()
+    sys.exit(app.exec())
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
