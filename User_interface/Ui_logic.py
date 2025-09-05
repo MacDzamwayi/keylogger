@@ -4,15 +4,13 @@ import warnings
 from Storage.database import pull_json
 from Ui_design import Ui_MainWindow, InputDialog
 
-storage = pull_json()
-
 
 class Logic(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, storage):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.dialog = InputDialog()
-        self.previous_button = None
+        self.storage = storage
         self.ui.setupUi(self)
         self.ui.createButton.clicked.connect(lambda _, name=None: self.handle_create(name))
         self.ui.onOffButtonD2.clicked.connect(self.toggle_recording)
@@ -64,7 +62,7 @@ class Logic(QtWidgets.QMainWindow):
 
         # Save to JSON if this is a new creation
         if name is None:
-            storage.update({
+            self.storage.update({
                 self.value: [
                     self.ui.entryC2.text(),
                     self.ui.labelB2.text(),
@@ -77,8 +75,18 @@ class Logic(QtWidgets.QMainWindow):
     def toggle_recording(self):
         # Get reference to the last button you interacted with
         if not hasattr(self, "current_button"):
+            if self.ui.onOffButtonD2.text().lower() == "off":
+                self.ui.onOffButtonD2.setText("ON")
+            else:
+                self.ui.onOffButtonD2.setText("OFF")
             return  # no button selected yet
-        print('on')
+
+        if self.ui.onOffButtonD2.text().lower() == "off":
+            self.ui.onOffButtonD2.setText("ON")
+            print('on')
+        else:
+            self.ui.onOffButtonD2.setText("OFF")
+
 
     def handle_bake(self):
         # Get reference to the last button you interacted with
@@ -110,9 +118,9 @@ class Logic(QtWidgets.QMainWindow):
         if port is None:
             self.ui.statusbar.showMessage("ALERT: Please enter Port Number", 5000)
             return 0
-        updated_list = storage.get(self.value)
+        updated_list = self.storage.get(self.current_button.text())
         updated_list[0] = port
-        storage[self.value] = updated_list
+        self.storage[self.current_button.text()] = updated_list
         print('save')
 
     def activate(self):
@@ -147,8 +155,8 @@ class Logic(QtWidgets.QMainWindow):
 
         # Remove from JSON
 
-        if label in storage:
-            del storage[label]
+        if label in self.storage:
+            del self.storage[label]
 
         # Reset current button
         self.current_button = None
@@ -157,15 +165,15 @@ class Logic(QtWidgets.QMainWindow):
     def handle_newButton(self):
         _translate = QtCore.QCoreApplication.translate
         if self.current_button.isChecked():
-            self.ui.entryC2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[0]}"))
-            self.ui.labelB2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[1]}"))
-            self.ui.labelA2.setText(_translate("MainWindow", f"{storage.get(self.current_button.text())[2]}"))
+            self.ui.entryC2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[0]}"))
+            self.ui.labelB2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[1]}"))
+            self.ui.labelA2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[2]}"))
 
     def load_buttons(self):
         """Load buttons from JSON"""
-        if storage.keys() is None:
+        if self.storage.keys() is None:
             return
-        for label in storage.keys():
+        for label in self.storage.keys():
             self.handle_create(label)
 
     def display(self):
@@ -206,6 +214,7 @@ class Logic(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = Logic()
+    storage = pull_json()
+    MainWindow = Logic(storage)
     MainWindow.show()
     sys.exit(app.exec())
