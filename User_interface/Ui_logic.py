@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 import warnings
 from Storage.database import pull_json, push_json, delete_json
-from Ui_design import Ui_MainWindow, InputDialog
+from User_interface.Ui_design import Ui_MainWindow, InputDialog
 
 
 class Logic(QtWidgets.QMainWindow):
@@ -86,7 +86,6 @@ class Logic(QtWidgets.QMainWindow):
             print('on')
         else:
             self.ui.onOffButtonD2.setText("OFF")
-
 
     def handle_bake(self):
         # Get reference to the last button you interacted with
