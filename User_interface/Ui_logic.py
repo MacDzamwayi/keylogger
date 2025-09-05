@@ -1,7 +1,7 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 import warnings
-from Storage.database import pull_json
+from Storage.database import pull_json, push_json, delete_json
 from Ui_design import Ui_MainWindow, InputDialog
 
 
@@ -121,6 +121,7 @@ class Logic(QtWidgets.QMainWindow):
         updated_list = self.storage.get(self.current_button.text())
         updated_list[0] = port
         self.storage[self.current_button.text()] = updated_list
+        push_json(self.storage)
         print('save')
 
     def activate(self):
@@ -157,6 +158,7 @@ class Logic(QtWidgets.QMainWindow):
 
         if label in self.storage:
             del self.storage[label]
+            delete_json(label)
 
         # Reset current button
         self.current_button = None
