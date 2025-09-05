@@ -8,8 +8,21 @@ def record_text(text: str, file_name: str) -> None:
         text_file.close()
 
 
+def delete_json(key: str):
+    module_dir = os.path.dirname(__file__)
+    DATA_FILE = os.path.join(module_dir, "storage.json")
+
+    with open(DATA_FILE, 'r+') as db_file:
+        storage = json.load(db_file)
+        del storage[key]
+        db_file.seek(0)
+        json.dump(storage, db_file, indent=4)
+        db_file.truncate()
+
+
 def push_json(dictionary: dict):
-    DATA_FILE = "storage.json"
+    module_dir = os.path.dirname(__file__)
+    DATA_FILE = os.path.join(module_dir, "storage.json")
 
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w') as data:
@@ -34,4 +47,3 @@ def pull_json() -> dict:
     with open(DATA_FILE, 'r+') as db_file:
         storage = json.load(db_file)
         return storage
-
