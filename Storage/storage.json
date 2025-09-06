@@ -4,18 +4,8 @@
         "UNIDENTIFIED",
         "UNIDENTIFIED"
     ],
-    "RouterA": [
-        87327,
-        "UNIDENTIFIED",
-        "UNIDENTIFIED"
-    ],
-    "ComputerB": [
-        9567,
-        "JUPITER",
-        "10.123.67.9"
-    ],
-    "RouterB": [
-        25907,
+    "testA": [
+        5555,
         "UNIDENTIFIED",
         "UNIDENTIFIED"
     ]
