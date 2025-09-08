@@ -1,6 +1,6 @@
 # KEYLOGGER
 _This is Graphical-User-Interface(GUI) application that creates and monitors trojans._ 
-![](Images\Screenshot1.png) ![](Images\Screenshot2.png)
+![](https://github.com/MacDzamwayi/keylogger/blob/main/Images/Screenshot1.png) ![](https://github.com/MacDzamwayi/keylogger/blob/main/Images/Screenshot2.png)
 
 
 ## **What does this app do?**
